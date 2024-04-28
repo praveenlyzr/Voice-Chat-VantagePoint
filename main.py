@@ -2,7 +2,11 @@
 import streamlit as st
 from lyzr import ChatBot, VoiceBot
 import os
-import openai
+from audio_recorder_streamlit import audio_recorder
+
+if not os.path.exists('tempDir'):
+    os.makedirs('tempDir')
+
 # Set up environment variables (keep your API keys secure and avoid hardcoding in production)
 os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 # Initialize the system prompt
@@ -28,7 +32,21 @@ chatbot = ChatBot.pdf_chat(
 st.title('Investor Relations Chatbot')
 user_input = st.text_input('Type your message:')
 
+# Voice bot
+voice = VoiceBot()
+audio_bytes = audio_recorder()
+if audio_bytes:
+    st.audio(audio_bytes, format="audio/wav")
+    # Save the recorded audio for transcription
+    with open('tempDir/output.wav', 'wb') as f:
+        f.write(audio_bytes)
+    transcript = VoiceBot.transcribe('tempDir/output.wav')
+    st.write(transcript)
 
 if st.button('Send'):
     response = chatbot.chat(user_input)
+    voice.text_to_speech(response.response)
     st.text(response.response)
+    tts_audio_file = 'tts_output.mp3'
+    if os.path.isfile(tts_audio_file):
+        st.audio(tts_audio_file, format='audio/mp3', start_time=0)
