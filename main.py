@@ -40,8 +40,10 @@ if audio_bytes:
     # Save the recorded audio for transcription
     with open('tempDir/output.wav', 'wb') as f:
         f.write(audio_bytes)
-    transcript = VoiceBot.transcribe('tempDir/output.wav')
-    st.write(transcript)
+    audiopath = 'tempDir/output.wav'
+    if audiopath:
+        user_input = voice.transcribe(audiofilepath='tempDir/output.wav')
+        st.write(user_input)
 
 if st.button('Send'):
     response = chatbot.chat(user_input)
